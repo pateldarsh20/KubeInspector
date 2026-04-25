@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: kubeinspector
+Version: 1.0.0
+Summary: 🏴☠️ Pirate-themed Kubernetes YAML Inspector & Auto-Fixer
+Author: Captain
+Requires-Python: >=3.10

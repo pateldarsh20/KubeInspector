@@ -1,0 +1,106 @@
+{
+  "name": "Captain's Seaworthiness Checklist",
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "RESOURCE-REQ",
+      "category": "RESOURCE",
+      "name": "CPU and Memory Requests",
+      "description": "Every container must have CPU and Memory requests defined",
+      "severity": "MANDATORY",
+      "check_class": "ResourceRequestsCheck",
+      "fix_class": "ResourceRequestsFix",
+      "pirate_phrases": {
+        "missing": "No ballast in {container}! She'll capsize in rough waters!",
+        "fixed": "Ballast added to {container}, Captain! She'll ride steady now!",
+        "explanation": "Requests are like ballast - they keep yer ship stable by reserving resources. Without 'em, one greedy container can starve the rest."
+      }
+    },
+    {
+      "id": "RESOURCE-LIM",
+      "category": "RESOURCE",
+      "name": "CPU and Memory Limits",
+      "description": "Every container must have CPU and Memory limits defined",
+      "severity": "MANDATORY",
+      "check_class": "ResourceLimitsCheck",
+      "fix_class": "ResourceLimitsFix",
+      "pirate_phrases": {
+        "missing": "No limits on {container}! One sailor drinkin' all the rum!",
+        "fixed": "Rum rationed for {container}, Captain! No more greedy sailors!",
+        "explanation": "Limits be the rum ration - prevents one container from consuming the entire ship's supplies."
+      }
+    },
+    {
+      "id": "HPA-MINMAX",
+      "category": "HPA",
+      "name": "HPA Min/Max Replicas",
+      "description": "HorizontalPodAutoscaler must have minReplicas and maxReplicas defined",
+      "severity": "MANDATORY",
+      "check_class": "HPAMinMaxCheck",
+      "fix_class": "HPAMinMaxFix",
+      "pirate_phrases": {
+        "missing": "No crew limits on {resource}! Could be 1 sailor or 1000 - pure chaos!",
+        "fixed": "Crew size locked for {resource}, Captain! No deserters, no stowaways!",
+        "explanation": "Min/max replicas keep yer crew size in check. Too few and ye sink, too many and ye run out of supplies."
+      }
+    },
+    {
+      "id": "HPA-CPU-MEM",
+      "category": "HPA",
+      "name": "CPU/Memory Based Scaling",
+      "description": "HPA must have CPU and/or Memory utilization metrics configured",
+      "severity": "MANDATORY",
+      "check_class": "HPACPUMemCheck",
+      "fix_class": "HPACPUMemFix",
+      "pirate_phrases": {
+        "missing": "{resource} scaling blindly! No CPU or Memory compass to steer by!",
+        "fixed": "Scaling compass installed on {resource}! She'll trim sails to the wind now!",
+        "explanation": "CPU/Memory metrics guide yer scaling like a compass guides a ship through fog."
+      }
+    },
+    {
+      "id": "HPA-BEHAVIOUR",
+      "category": "HPA",
+      "name": "HPA Scaling Behaviour",
+      "description": "HPA must have scaleUp and scaleDown behavior policies defined",
+      "severity": "MANDATORY",
+      "check_class": "HPABehaviorCheck",
+      "fix_class": "HPABehaviorFix",
+      "pirate_phrases": {
+        "missing": "No scaling discipline on {resource}! She'll panic and add crew in a storm!",
+        "fixed": "Scaling discipline enforced on {resource}! Steady as she goes!",
+        "explanation": "Behavior policies prevent yer ship from panicking. Scale up fast, scale down slow - like reefing sails in a squall."
+      }
+    },
+    {
+      "id": "HPA-CUSTOM-RPS",
+      "category": "HPA",
+      "name": "Requests Per Second Custom Metric",
+      "description": "HPA should use Prometheus-based requests per second custom metric",
+      "severity": "RECOMMENDED",
+      "check_class": "HPACustomRPSCheck",
+      "fix_class": "HPACustomRPSFix",
+      "prometheus_query": "rate(http_requests_total{deployment=\"{deployment}\",namespace=\"{namespace}\"}[1m])",
+      "pirate_phrases": {
+        "missing": "Counting waves would help {resource} scale better, Captain!",
+        "fixed": "Wave counter installed on {resource}! She'll sense storms before they hit!",
+        "explanation": "RPS metric be like counting waves hittin' the hull. More waves = more sailors needed."
+      }
+    },
+    {
+      "id": "HPA-CUSTOM-LATENCY",
+      "category": "HPA",
+      "name": "Latency Based Custom Metric",
+      "description": "HPA should use Prometheus-based latency custom metric",
+      "severity": "RECOMMENDED",
+      "check_class": "HPACustomLatencyCheck",
+      "fix_class": "HPACustomLatencyFix",
+      "prometheus_query": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{deployment=\"{deployment}\",namespace=\"{namespace}\"}[5m]))",
+      "pirate_phrases": {
+        "missing": "{resource} be slow to react! Latency metric would give early warning!",
+        "fixed": "Speed gauge installed on {resource}! She'll know when the rudder's slow!",
+        "explanation": "Latency metric tells ye if yer ship's responding slowly. Better to know before the crew mutinies!"
+      }
+    }
+  ]
+}
