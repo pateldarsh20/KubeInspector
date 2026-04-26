@@ -22,36 +22,41 @@ class HPAMinMaxCheck(BaseCheck):
         }
     
     def _check_hpa_directly(self, hpa_yaml: dict, resource_name: str, namespace: str) -> dict:
-        spec = hpa_yaml.get('spec', {})
+        spec = hpa_yaml.get('spec') or {}
         issues = []
         passed = True
         
-        if spec.get('minReplicas') is None:
+        min_val = spec.get('minReplicas')
+        max_val = spec.get('maxReplicas')
+        
+        # Check existence
+        if min_val is None:
             issues.append({'field': 'minReplicas', 'issue': 'MISSING', 'detail': 'Minimum replicas not defined'})
             passed = False
         
-        if spec.get('maxReplicas') is None:
+        if max_val is None:
             issues.append({'field': 'maxReplicas', 'issue': 'MISSING', 'detail': 'Maximum replicas not defined'})
             passed = False
         
-        if spec.get('minReplicas') is not None:
-            if spec['minReplicas'] < 2:
+        # Only do value checks if both are valid integers
+        if isinstance(min_val, int):
+            if min_val < 2:
                 issues.append({
                     'field': 'minReplicas',
                     'issue': 'LOW_REPLICAS',
-                    'detail': f"minReplicas ({spec['minReplicas']}) should be at least 2 for High Availability",
-                    'current_min': spec['minReplicas']
+                    'detail': f"minReplicas ({min_val}) should be at least 2 for High Availability",
+                    'current_min': min_val
                 })
                 passed = False
         
-        if 'minReplicas' in spec and 'maxReplicas' in spec:
-            if spec['minReplicas'] >= spec['maxReplicas']:
+        if isinstance(min_val, int) and isinstance(max_val, int):
+            if min_val >= max_val:
                 issues.append({
                     'field': 'minReplicas/maxReplicas',
                     'issue': 'INVALID',
-                    'detail': f"minReplicas ({spec['minReplicas']}) must be less than maxReplicas ({spec['maxReplicas']})",
-                    'current_min': spec['minReplicas'],
-                    'current_max': spec['maxReplicas']
+                    'detail': f"minReplicas ({min_val}) must be less than maxReplicas ({max_val})",
+                    'current_min': min_val,
+                    'current_max': max_val
                 })
                 passed = False
         
@@ -64,9 +69,9 @@ class HPAMinMaxCheck(BaseCheck):
             "resource_name": resource_name,
             "namespace": namespace,
             "issues": issues,
-            "current_min": spec.get('minReplicas', 'NOT SET'),
-            "current_max": spec.get('maxReplicas', 'NOT SET'),
-            "details": f"minReplicas={spec.get('minReplicas', 'MISSING')}, maxReplicas={spec.get('maxReplicas', 'MISSING')}"
+            "current_min": min_val if min_val is not None else 'NOT SET',
+            "current_max": max_val if max_val is not None else 'NOT SET',
+            "details": f"minReplicas={min_val if min_val is not None else 'MISSING'}, maxReplicas={max_val if max_val is not None else 'MISSING'}"
         }
     
     def get_fix(self, yaml_content: dict, issues: list) -> dict:

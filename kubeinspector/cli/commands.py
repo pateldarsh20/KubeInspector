@@ -65,38 +65,54 @@ def _display_terminal_report(report, scanned):
     
     console.print(Panel.fit(
         f"[bold {status_color}]{status_text}[/bold {status_color}]\n\n"
-        f"[cyan]Total Checks:[/cyan] {summary['total_checks']}\n"
-        f"[green]Passed:[/green] {summary['passed']}\n"
+        f"[cyan]Total Checks:[/cyan] {summary['total_checks']}  "
+        f"[green]Passed:[/green] {summary['passed']}  "
         f"[red]Failed:[/red] {summary['failed']}",
         title="⚓ INSPECTION REPORT",
         border_style="cyan"
     ))
     
-    console.print(f"\n[dim]📦 Workloads found: {len(scanned.get('workloads', []))}")
-    console.print(f"[dim]🔄 HPAs found: {len(scanned.get('hpas', []))}")
-    
+    console.print(f"\n[dim]📦 Workloads found: {len(scanned.get('workloads', []))}[/dim]")
+    console.print(f"[dim]🔄 HPAs found: {len(scanned.get('hpas', []))}[/dim]")
+
+    # ── CRITICAL ISSUES ───────────────────────────────────────────────
     if report['mandatory_failures']:
         console.print("\n[bold red]🚨 CRITICAL ISSUES (Fix 'em or walk the plank!)[/bold red]")
-        
-        table = Table(show_header=True, header_style="bold red")
-        table.add_column("Resource")
-        table.add_column("Check")
-        table.add_column("Issue")
-        
+        table = Table(show_header=True, header_style="bold white on red", border_style="red", show_lines=True)
+        table.add_column("Severity",  style="bold red",   no_wrap=True)
+        table.add_column("Category",  style="cyan",       no_wrap=True)
+        table.add_column("Resource",  style="bold white", no_wrap=False)
+        table.add_column("Check",     style="yellow")
+        table.add_column("Details",   style="white")
         for failure in report['mandatory_failures']:
             table.add_row(
+                "🔴 MANDATORY",
+                failure.get('category', '-'),
                 f"{failure.get('namespace', 'default')}/{failure.get('resource_name', 'unknown')}",
                 failure.get('check_name', ''),
                 failure.get('details', 'Unknown issue')
             )
-        
         console.print(table)
-    
+
+    # ── RECOMMENDED IMPROVEMENTS ──────────────────────────────────────
     if report.get('recommended_failures'):
         console.print("\n[bold yellow]⚠️  RECOMMENDED IMPROVEMENTS[/bold yellow]")
+        table = Table(show_header=True, header_style="bold white on dark_orange", border_style="yellow", show_lines=True)
+        table.add_column("Severity",  style="bold yellow", no_wrap=True)
+        table.add_column("Category",  style="cyan",        no_wrap=True)
+        table.add_column("Resource",  style="bold white",  no_wrap=False)
+        table.add_column("Check",     style="yellow")
+        table.add_column("Details",   style="white")
         for failure in report['recommended_failures']:
-            console.print(f"  [yellow]•[/yellow] {failure.get('resource_name', 'unknown')}: {failure.get('check_name', '')} - {failure.get('details', '')}")
-    
+            table.add_row(
+                "🟡 RECOMMENDED",
+                failure.get('category', '-'),
+                f"{failure.get('namespace', 'default')}/{failure.get('resource_name', 'unknown')}",
+                failure.get('check_name', ''),
+                failure.get('details', '')
+            )
+        console.print(table)
+
     if summary['all_clear']:
         console.print(report['pirate_summary'])
 
