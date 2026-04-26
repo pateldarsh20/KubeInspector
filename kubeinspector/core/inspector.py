@@ -52,17 +52,24 @@ class Inspector:
         yaml_content = resource['content']
         name = resource['name']
         namespace = resource['namespace']
+        file_path = resource.get('file_path', 'unknown')
         
         if kind in ['Deployment', 'StatefulSet', 'DaemonSet', 'ReplicaSet']:
             if 'RESOURCE-REQ' in self.checks:
-                results.append(self.checks['RESOURCE-REQ'].execute(yaml_content, name, namespace))
+                res = self.checks['RESOURCE-REQ'].execute(yaml_content, name, namespace)
+                res['file_path'] = file_path
+                results.append(res)
             if 'RESOURCE-LIM' in self.checks:
-                results.append(self.checks['RESOURCE-LIM'].execute(yaml_content, name, namespace))
+                res = self.checks['RESOURCE-LIM'].execute(yaml_content, name, namespace)
+                res['file_path'] = file_path
+                results.append(res)
         
         if kind == 'HorizontalPodAutoscaler':
             for check_id in ['HPA-MINMAX', 'HPA-CPU-MEM', 'HPA-BEHAVIOUR', 'HPA-CUSTOM-RPS', 'HPA-CUSTOM-LATENCY']:
                 if check_id in self.checks:
-                    results.append(self.checks[check_id].execute(yaml_content, name, namespace))
+                    res = self.checks[check_id].execute(yaml_content, name, namespace)
+                    res['file_path'] = file_path
+                    results.append(res)
         
         if 'linked_hpas' in resource:
             for hpa in resource['linked_hpas']:

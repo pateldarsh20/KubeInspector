@@ -18,7 +18,7 @@ class ResourceLimitsCheck(BaseCheck):
                 'current': {}
             }
             
-            if 'resources' not in container:
+            if not container.get('resources'):
                 container_issues['missing'].extend(['cpu_limit', 'memory_limit'])
                 container_issues['details'] = "No resources block at all"
                 issues.append(container_issues)
@@ -27,7 +27,7 @@ class ResourceLimitsCheck(BaseCheck):
             
             resources = container.get('resources', {})
             
-            if 'limits' not in resources:
+            if not resources.get('limits'):
                 container_issues['missing'].extend(['cpu_limit', 'memory_limit'])
                 container_issues['details'] = "No limits defined"
                 issues.append(container_issues)
@@ -36,13 +36,13 @@ class ResourceLimitsCheck(BaseCheck):
             
             limits = resources['limits']
             
-            if 'cpu' not in limits:
+            if not limits.get('cpu'):
                 container_issues['missing'].append('cpu_limit')
                 passed = False
             else:
                 container_issues['current']['cpu_limit'] = limits['cpu']
             
-            if 'memory' not in limits:
+            if not limits.get('memory'):
                 container_issues['missing'].append('memory_limit')
                 passed = False
             else:

@@ -58,8 +58,30 @@ class Fixer:
             self._create_backup(file_path)
             
             modified_yaml = fix['modified_yaml']
+            
+            # Multi-document support
+            with open(file_path, 'r') as f:
+                all_docs = list(yaml.safe_load_all(f))
+            
+            # If the file has multiple docs, we need to find the right one to replace
+            found = False
+            for i, doc in enumerate(all_docs):
+                if not doc: continue
+                if doc.get('kind') == modified_yaml.get('kind') and doc.get('metadata', {}).get('name') == modified_yaml.get('metadata', {}).get('name'):
+                    all_docs[i] = modified_yaml
+                    found = True
+                    break
+            
+            if not found:
+                # If it's a single doc file or we didn't find the match in the multi-doc
+                if len(all_docs) <= 1:
+                    all_docs = [modified_yaml]
+                else:
+                    # This shouldn't really happen if scanner found it, but just in case
+                    all_docs.append(modified_yaml)
+
             with open(file_path, 'w') as f:
-                yaml.dump(modified_yaml, f, default_flow_style=False, sort_keys=False)
+                yaml.dump_all(all_docs, f, default_flow_style=False, sort_keys=False)
             
             self.fixes_applied.append({
                 "file": file_path,

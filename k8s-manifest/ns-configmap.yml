@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: habit-tracker
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: habit-tracker-config
+  namespace: habit-tracker
+data:
+  JWT_SECRET: "habit-tracker-secret-key-change-in-production"
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"

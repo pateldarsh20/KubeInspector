@@ -18,7 +18,7 @@ class ResourceRequestsCheck(BaseCheck):
                 'current': {}
             }
             
-            if 'resources' not in container:
+            if not container.get('resources'):
                 container_issues['missing'].extend(['cpu_request', 'memory_request'])
                 container_issues['details'] = "No resources block at all"
                 issues.append(container_issues)
@@ -27,7 +27,7 @@ class ResourceRequestsCheck(BaseCheck):
             
             resources = container.get('resources', {})
             
-            if 'requests' not in resources:
+            if not resources.get('requests'):
                 container_issues['missing'].extend(['cpu_request', 'memory_request'])
                 container_issues['details'] = "No requests defined"
                 issues.append(container_issues)
@@ -36,13 +36,13 @@ class ResourceRequestsCheck(BaseCheck):
             
             requests = resources['requests']
             
-            if 'cpu' not in requests:
+            if not requests.get('cpu'):
                 container_issues['missing'].append('cpu_request')
                 passed = False
             else:
                 container_issues['current']['cpu_request'] = requests['cpu']
             
-            if 'memory' not in requests:
+            if not requests.get('memory'):
                 container_issues['missing'].append('memory_request')
                 passed = False
             else:

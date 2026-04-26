@@ -22,23 +22,35 @@ class HPACPUMemCheck(BaseCheck):
         }
     
     def _check_hpa_directly(self, hpa_yaml: dict, resource_name: str, namespace: str) -> dict:
-        spec = hpa_yaml.get('spec', {})
-        metrics = spec.get('metrics', [])
+        spec = hpa_yaml.get('spec') or {}
+        metrics = spec.get('metrics')
+        if not isinstance(metrics, list): metrics = []
         
+        found_metrics = []
         has_cpu = False
         has_mem = False
         
         for metric in metrics:
-            if metric.get('type') == 'Resource':
-                res_name = metric.get('resource', {}).get('name')
-                if res_name == 'cpu': has_cpu = True
-                if res_name == 'memory': has_mem = True
+            if not isinstance(metric, dict): continue
+            m_type = str(metric.get('type', '')).strip().lower()
+            if m_type == 'resource':
+                res = metric.get('resource') or {}
+                res_name = str(res.get('name', '')).strip().lower()
+                if res_name == 'cpu':
+                    has_cpu = True
+                    found_metrics.append("CPU")
+                elif res_name == 'memory':
+                    has_mem = True
+                    found_metrics.append("Memory")
         
-        passed = has_cpu or has_mem
-        
+        passed = has_cpu and has_mem
         issues = []
-        if not passed:
-            issues.append({"field": "metrics", "issue": "MISSING", "detail": "No CPU or Memory metric found"})
+        if not has_cpu:
+            issues.append({"field": "metrics", "issue": "MISSING", "detail": "CPU utilization metric missing from HPA spec"})
+        if not has_mem:
+            issues.append({"field": "metrics", "issue": "MISSING", "detail": "Memory utilization metric missing from HPA spec"})
+            
+        details = f"Found metrics: {', '.join(found_metrics)}" if passed else f"Missing: {'CPU' if not has_cpu else ''}{' and ' if not has_cpu and not has_mem else ''}{'Memory' if not has_mem else ''} scaling metric(s)"
             
         return {
             "check_id": self.check_id,
@@ -49,7 +61,7 @@ class HPACPUMemCheck(BaseCheck):
             "resource_name": resource_name,
             "namespace": namespace,
             "issues": issues,
-            "details": "CPU/Memory metrics found" if passed else "Missing CPU/Memory metrics"
+            "details": details
         }
         
     def get_fix(self, yaml_content: dict, issues: list) -> dict:
@@ -57,7 +69,7 @@ class HPACPUMemCheck(BaseCheck):
         fixed_yaml = copy.deepcopy(yaml_content)
         spec = fixed_yaml.get('spec', {})
         
-        if 'metrics' not in spec:
+        if not spec.get('metrics'):
             spec['metrics'] = []
             
         spec['metrics'].append({

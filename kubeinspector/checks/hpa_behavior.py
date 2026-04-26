@@ -9,7 +9,7 @@ class HPABehaviorCheck(BaseCheck):
             spec = yaml_content.get('spec', {})
             behavior = spec.get('behavior', {})
             
-            passed = 'scaleUp' in behavior and 'scaleDown' in behavior
+            passed = bool(behavior.get('scaleUp')) and bool(behavior.get('scaleDown'))
             issues = []
             if not passed:
                 issues.append({"field": "behavior", "issue": "MISSING", "detail": "Missing scaleUp/scaleDown policies"})

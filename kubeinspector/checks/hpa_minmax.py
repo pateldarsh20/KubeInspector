@@ -26,13 +26,23 @@ class HPAMinMaxCheck(BaseCheck):
         issues = []
         passed = True
         
-        if 'minReplicas' not in spec:
+        if spec.get('minReplicas') is None:
             issues.append({'field': 'minReplicas', 'issue': 'MISSING', 'detail': 'Minimum replicas not defined'})
             passed = False
         
-        if 'maxReplicas' not in spec:
+        if spec.get('maxReplicas') is None:
             issues.append({'field': 'maxReplicas', 'issue': 'MISSING', 'detail': 'Maximum replicas not defined'})
             passed = False
+        
+        if spec.get('minReplicas') is not None:
+            if spec['minReplicas'] < 2:
+                issues.append({
+                    'field': 'minReplicas',
+                    'issue': 'LOW_REPLICAS',
+                    'detail': f"minReplicas ({spec['minReplicas']}) should be at least 2 for High Availability",
+                    'current_min': spec['minReplicas']
+                })
+                passed = False
         
         if 'minReplicas' in spec and 'maxReplicas' in spec:
             if spec['minReplicas'] >= spec['maxReplicas']:
@@ -65,7 +75,7 @@ class HPAMinMaxCheck(BaseCheck):
         spec = fixed_yaml['spec']
         
         for issue in issues:
-            if issue['field'] == 'minReplicas' and issue['issue'] == 'MISSING':
+            if issue['field'] == 'minReplicas' and (issue['issue'] == 'MISSING' or issue['issue'] == 'LOW_REPLICAS'):
                 spec['minReplicas'] = 2
             elif issue['field'] == 'maxReplicas' and issue['issue'] == 'MISSING':
                 spec['maxReplicas'] = 10

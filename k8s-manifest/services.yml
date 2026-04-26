@@ -1,0 +1,189 @@
+---
+# ==================== RABBITMQ SERVICE ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: habit-tracker
+spec:
+  type: NodePort
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+      nodePort: 30070
+    - name: mgmt
+      port: 15672
+      targetPort: 15672
+      nodePort: 31672
+
+---
+# ==================== MONGODB SERVICES ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-users
+  namespace: habit-tracker
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb-users
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-habits
+  namespace: habit-tracker
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb-habits
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-tracking
+  namespace: habit-tracker
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb-tracking
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-analytics
+  namespace: habit-tracker
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb-analytics
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-notifications
+  namespace: habit-tracker
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb-notifications
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+---
+# ==================== MICROSERVICE SERVICES (ADDED) ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: habit-tracker
+spec:
+  selector:
+    app: user-service
+  ports:
+    - port: 3001
+      targetPort: 3001
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: habit-service
+  namespace: habit-tracker
+spec:
+  selector:
+    app: habit-service
+  ports:
+    - port: 3002
+      targetPort: 3002
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracking-service
+  namespace: habit-tracker
+spec:
+  selector:
+    app: tracking-service
+  ports:
+    - port: 3003
+      targetPort: 3003
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: habit-tracker
+spec:
+  selector:
+    app: analytics-service
+  ports:
+    - port: 3004
+      targetPort: 3004
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: habit-tracker
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: 3005
+      targetPort: 3005
+
+---
+# ==================== API GATEWAY SERVICE ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: habit-tracker
+spec:
+  type: NodePort
+  selector:
+    app: api-gateway
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30080
+
+---
+# ==================== FRONTEND SERVICE ====================
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: habit-tracker
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30090

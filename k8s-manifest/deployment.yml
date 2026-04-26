@@ -1,0 +1,364 @@
+---
+# ==================== USER SERVICE ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: habit-tracker
+spec:
+  # NO replicas field - HPA controls this
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: pateldarsh21/habit-tracker:user-service-v2
+          ports:
+            - containerPort: 3001
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3001"
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-users:27017/habit-tracker-users"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq:5672"
+          # ========== PRE-STOP HOOK ==========
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 10"
+      # ========== TERMINATION GRACE PERIOD ==========
+      terminationGracePeriodSeconds: 45
+
+---
+# ==================== HABIT SERVICE ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: habit-service
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: habit-service
+  template:
+    metadata:
+      labels:
+        app: habit-service
+    spec:
+      containers:
+        - name: habit-service
+          image: pateldarsh21/habit-tracker:habit-service-v2
+          ports:
+            - containerPort: 3002
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3002"
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-habits:27017/habit-tracker-habits"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq:5672"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 10"
+      terminationGracePeriodSeconds: 45
+
+---
+# ==================== TRACKING SERVICE ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracking-service
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: tracking-service
+  template:
+    metadata:
+      labels:
+        app: tracking-service
+    spec:
+      containers:
+        - name: tracking-service
+          image: pateldarsh21/habit-tracker:tracking-service-v2
+          ports:
+            - containerPort: 3003
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3003"
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-tracking:27017/habit-tracker-tracking"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq:5672"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 10"
+      terminationGracePeriodSeconds: 45
+
+---
+# ==================== ANALYTICS SERVICE ====================
+# Heavy service - needs more time
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: pateldarsh21/habit-tracker:analytics-service-v2
+          ports:
+            - containerPort: 3004
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3004"
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-analytics:27017/habit-tracker-analytics"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq:5672"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 30"  # Longer sleep for analytics
+      terminationGracePeriodSeconds: 90  # More time for heavy service
+
+---
+# ==================== NOTIFICATION SERVICE ====================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: pateldarsh21/habit-tracker:notification-service-v2
+          ports:
+            - containerPort: 3005
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3005"
+            - name: MONGODB_URI
+              value: "mongodb://mongodb-notifications:27017/habit-tracker-notifications"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: RABBITMQ_URL
+              value: "amqp://guest:guest@rabbitmq:5672"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 10"
+      terminationGracePeriodSeconds: 45
+
+---
+# ==================== API GATEWAY ====================
+# Critical service - needs careful draining
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: pateldarsh21/habit-tracker:api-gateway-v5
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+            - name: JWT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: JWT_SECRET
+            - name: USER_SERVICE_URL
+              value: "http://user-service:3001"
+            - name: HABIT_SERVICE_URL
+              value: "http://habit-service:3002"
+            - name: TRACKING_SERVICE_URL
+              value: "http://tracking-service:3003"
+            - name: ANALYTICS_SERVICE_URL
+              value: "http://analytics-service:3004"
+            - name: NOTIFICATION_SERVICE_URL
+              value: "http://notification-service:3005"
+            - name: RATE_LIMIT_WINDOW_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: RATE_LIMIT_WINDOW_MS
+            - name: RATE_LIMIT_MAX_REQUESTS
+              valueFrom:
+                configMapKeyRef:
+                  name: habit-tracker-config
+                  key: RATE_LIMIT_MAX_REQUESTS
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 15"  # Drain active connections
+      terminationGracePeriodSeconds: 60  # Give time to finish requests
+
+---
+# ==================== FRONTEND ====================
+# Static files - fast shutdown
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: habit-tracker
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: pateldarsh21/habit-tracker:frontend-v3
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 5"  # Short sleep for static files
+      terminationGracePeriodSeconds: 30
