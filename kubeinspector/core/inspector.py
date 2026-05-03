@@ -7,6 +7,9 @@ from ..checks.hpa_cpu_mem import HPACPUMemCheck
 from ..checks.hpa_behavior import HPABehaviorCheck
 from ..checks.hpa_custom_rps import HPACustomRPSCheck
 from ..checks.hpa_custom_latency import HPACustomLatencyCheck
+from ..checks.startup_probe import StartupProbeCheck
+from ..checks.readiness_probe import ReadinessProbeCheck
+from ..checks.liveness_probe import LivenessProbeCheck
 from ..personality.response_builder import ResponseBuilder
 
 class Inspector:
@@ -35,6 +38,9 @@ class Inspector:
             "HPA-BEHAVIOUR": HPABehaviorCheck,
             "HPA-CUSTOM-RPS": HPACustomRPSCheck,
             "HPA-CUSTOM-LATENCY": HPACustomLatencyCheck,
+            "PROBE-STARTUP": StartupProbeCheck,
+            "PROBE-READINESS": ReadinessProbeCheck,
+            "PROBE-LIVENESS": LivenessProbeCheck,
         }
         
         initialized = {}
@@ -55,14 +61,11 @@ class Inspector:
         file_path = resource.get('file_path', 'unknown')
         
         if kind in ['Deployment', 'StatefulSet', 'DaemonSet', 'ReplicaSet']:
-            if 'RESOURCE-REQ' in self.checks:
-                res = self.checks['RESOURCE-REQ'].execute(yaml_content, name, namespace)
-                res['file_path'] = file_path
-                results.append(res)
-            if 'RESOURCE-LIM' in self.checks:
-                res = self.checks['RESOURCE-LIM'].execute(yaml_content, name, namespace)
-                res['file_path'] = file_path
-                results.append(res)
+            for check_id in ['RESOURCE-REQ', 'RESOURCE-LIM', 'PROBE-STARTUP', 'PROBE-READINESS', 'PROBE-LIVENESS']:
+                if check_id in self.checks:
+                    res = self.checks[check_id].execute(yaml_content, name, namespace)
+                    res['file_path'] = file_path
+                    results.append(res)
         
         if kind == 'HorizontalPodAutoscaler':
             for check_id in ['HPA-MINMAX', 'HPA-CPU-MEM', 'HPA-BEHAVIOUR', 'HPA-CUSTOM-RPS', 'HPA-CUSTOM-LATENCY']:

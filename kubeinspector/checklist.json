@@ -101,6 +101,48 @@
         "fixed": "Speed gauge installed on {resource}! She'll know when the rudder's slow!",
         "explanation": "Latency metric tells ye if yer ship's responding slowly. Better to know before the crew mutinies!"
       }
+    },
+    {
+      "id": "PROBE-STARTUP",
+      "category": "PROBE",
+      "name": "Startup Probe",
+      "description": "Every container must have a startupProbe defined",
+      "severity": "MANDATORY",
+      "check_class": "StartupProbeCheck",
+      "fix_class": "StartupProbeFix",
+      "pirate_phrases": {
+        "missing": "No spyglass for {container}'s dawn! We don't know if she woke up!",
+        "fixed": "Spyglass given to {container}! We'll see her wake!",
+        "explanation": "Startup probes protect slow-starting ships from being killed before they even get going."
+      }
+    },
+    {
+      "id": "PROBE-READINESS",
+      "category": "PROBE",
+      "name": "Readiness Probe",
+      "description": "Every container must have a readinessProbe defined",
+      "severity": "MANDATORY",
+      "check_class": "ReadinessProbeCheck",
+      "fix_class": "ReadinessProbeFix",
+      "pirate_phrases": {
+        "missing": "{container} taking passengers before she's ready! Absolute madness!",
+        "fixed": "Gangway controlled for {container}! Passengers wait 'til she's shipshape!",
+        "explanation": "Readiness probes ensure yer ship is ready to take cargo (traffic) before opening the gangway."
+      }
+    },
+    {
+      "id": "PROBE-LIVENESS",
+      "category": "PROBE",
+      "name": "Liveness Probe",
+      "description": "Every container must have a livenessProbe defined",
+      "severity": "MANDATORY",
+      "check_class": "LivenessProbeCheck",
+      "fix_class": "LivenessProbeFix",
+      "pirate_phrases": {
+        "missing": "Is {container} dead or alive in the water? No one knows!",
+        "fixed": "Heartbeat monitor added to {container}! If she dies, we'll revive her!",
+        "explanation": "Liveness probes check if yer ship is still afloat. If she's dead, Kubernetes restarts her."
+      }
     }
   ]
 }
